@@ -137,11 +137,11 @@ var topicStream = client.updates;
 //   yield* StreamT ;
 // }
 
-Future<int> subscript() async {
-
+Future<int> subscript(String? _topic) async {
+  _topic ??= topic;
   /// Ok, lets try a subscription
-  print('EXAMPLE::Subscribing to the $topic topic');
-  client.subscribe(topic, MqttQos.atMostOnce);
+  print('EXAMPLE::Subscribing to the $_topic topic');
+  client.subscribe(_topic, MqttQos.atMostOnce);
 
   // / The client has a change notifier object(see the Observable class) which we then listen to to get
   // / notifications of published updates to each subscribed topic.

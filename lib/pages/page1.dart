@@ -72,7 +72,13 @@ class _MQTTScreenState extends State<MQTTScreen> {
     //box.clear();
     // mqttSubscribe();
   }
-
+  final myController = TextEditingController();
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
   bool work = false;
@@ -85,15 +91,15 @@ class _MQTTScreenState extends State<MQTTScreen> {
 
     void _subscript() {
       setState(() {
-        mqtt3.topicStream!.listen(
-                (data) {
-              // final recMess = data![0].payload as MqttPublishMessage;
-              //  var message =
-              // MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-                notifications = '${data[0].topic} ';
-            }
-        );
-        mqtt3.subscript();
+        // mqtt3.topicStream!.listen(
+        //         (data) {
+        //       // final recMess = data![0].payload as MqttPublishMessage;
+        //       //  var message =
+        //       // MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+        //         notifications = '${data[0].topic} ';
+        //     }
+        // );
+        mqtt3.subscript(myController.text);
       });
           // connectionState = await client.connectionState;
     }
@@ -256,6 +262,46 @@ class _MQTTScreenState extends State<MQTTScreen> {
       int k = 0;
       while (k < n) yield [k++];
     }
+    var _streamwidget = StreamBuilder(
+      stream: _clock(), //mqtt3.createAsyncGenerator(work),
+      initialData: ['',''],
+      builder: (
+          BuildContext context,
+          AsyncSnapshot snapshot,
+          ) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              Visibility(
+                visible: snapshot.hasData,
+                child: Text(
+                  'no data',
+                  style: const TextStyle(color: Colors.black, fontSize: 24),
+                ),
+              ),
+            ],
+          );
+        } else
+        if (snapshot.connectionState == ConnectionState.active
+            || snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError)
+            return const Text('Error');
+          else if (snapshot.hasData && snapshot.data != null)
+            return Text(
+                '${snapshot.data ?? '' }',
+                style: const TextStyle(color: Colors.teal, fontSize: 20)
+            );
+          else
+            return const Text('Empty data');
+        }
+        else
+          return Text('streamState: ${snapshot.connectionState}');
+
+      },
+    );
 
     var scaffold = Scaffold(
       appBar: AppBar(
@@ -277,48 +323,23 @@ class _MQTTScreenState extends State<MQTTScreen> {
         width: double.infinity,
         child: Center(
           child:
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _streamwidget,
+              TextField(
+                  controller: myController,
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter a topic',
+                  ),
+              ),
+            ],
+          )
           // Text('$notifications')
           // Text('${mqtt3.notifications.last}')
-          StreamBuilder(
-            stream: _clock(), //mqtt3.createAsyncGenerator(work),
-            initialData: ['',''],
-            builder: (
-                BuildContext context,
-                AsyncSnapshot snapshot,
-                ) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      Visibility(
-                        visible: snapshot.hasData,
-                        child: Text(
-                          'no data',
-                          style: const TextStyle(color: Colors.black, fontSize: 24),
-                        ),
-                      ),
-                    ],
-                );
-              } else
-                    if (snapshot.connectionState == ConnectionState.active
-                        || snapshot.connectionState == ConnectionState.done) {
-                            if (snapshot.hasError)
-                                  return const Text('Error');
-                            else if (snapshot.hasData && snapshot.data != null)
-                              return Text(
-                                        '${snapshot.data ?? '' }',
-                                        style: const TextStyle(color: Colors.teal, fontSize: 20)
-                                         );
-                           else
-                                return const Text('Empty data');
-                    }
-                    else
-                        return Text('streamState: ${snapshot.connectionState}');
-
-            },
-          ),
 
         ),
       ),
