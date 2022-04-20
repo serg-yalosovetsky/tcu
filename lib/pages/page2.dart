@@ -1,59 +1,110 @@
 import 'package:flutter/material.dart';
 import 'package:tcu/widgets/components.dart';
-
-// void main() {
-//   runApp(const Page2());
-// }
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'package:flutter/material.dart';
+// import 'package:flutter_stream_builder_demo/loading_widget.dart';
 const String title2 = 'Мероприятия';
 
+class Page2 extends StatefulWidget {
+  @override
+  _FlutterStreamBuilderState createState() => _FlutterStreamBuilderState();
+}
 
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
+class _FlutterStreamBuilderState extends State<Page2> {
+  late double _height;
+  late double _width;
+
+  final imgStream = StreamController<Image>();
+
+  int imgCounter = -1;
+
+  final List<Image> imageList = [
+    Image.asset(
+      'assets/images/resort_1.jpg',
+      fit: BoxFit.cover,
+    ),
+    Image.asset(
+      'assets/images/resort_2.jpg',
+      fit: BoxFit.cover,
+    ),
+    Image.asset(
+      'assets/images/resort_3.jpg',
+      fit: BoxFit.cover,
+    ),
+    Image.asset(
+      'assets/images/resort_4.jpg',
+      fit: BoxFit.cover,
+    ),
+  ];
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: title2,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const StatePage2(title: title2),
-    );
+  void dispose() {
+    imgStream.close();
+    super.dispose();
   }
-}
-
-class StatePage2 extends StatefulWidget {
-  const StatePage2({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  State<StatePage2> createState() => _StatePage2State();
-}
-
-class _StatePage2State extends State<StatePage2> {
-
 
   @override
   Widget build(BuildContext context) {
+    _height = MediaQuery.of(context).size.height;
+    _width = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
+      body: Container(
+        height: _height,
+        width: _width,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            StreamBuilder(
+                stream: imgStream.stream,
+                builder:
+                    (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                  if (!snapshot.hasData) {
+                    // return Loader();
+                  }
 
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+                  if (snapshot.connectionState == ConnectionState.done) {}
+
+                  return Container(
+                    height: 220,
+                    width: 220,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                    //  color: snapshot.data,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      child: snapshot.data,
+                    ),
+                  );
+                }),
+            RaisedButton(
+              shape: new RoundedRectangleBorder(
+                borderRadius: new BorderRadius.circular(30.0),
+              ),
+              onPressed: () {
+                // colorStream.sink.add(Colors.blue);
+
+                imgCounter++;
+
+                if (imgCounter < imageList.length) {
+                  imgStream.sink.add(imageList[imgCounter]);
+                } else {
+                  imgStream.close();
+                }
+              },
+              color: Colors.red,
+              textColor: Colors.white,
+              child: Text("  Click Me  ".toUpperCase(),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1)),
             ),
-
           ],
         ),
       ),
-      drawer: returnMenu(context),
-      // floatingActionButton: returnFloatingButton(_incrementCounter), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

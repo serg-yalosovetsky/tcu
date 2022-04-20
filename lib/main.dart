@@ -31,7 +31,7 @@ class TCUapp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => BaseHomePage(title: 'home',),
-        '/page1': (context) => Page1(),
+        '/page1': (context) => MQTTScreen(),
         '/page2': (context) => Page2(),
       },
 
