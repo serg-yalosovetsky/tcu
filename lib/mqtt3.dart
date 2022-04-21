@@ -19,11 +19,13 @@ import 'mqtt2.dart';
 /// of 1883 is used.
 /// If you want to use websockets rather than TCP see below.
 late final client = MqttServerClient('10.80.39.78', '');
-var notifications = [['','']];
+List<List<String>> list_notifications = [['','']];
+List<String> notifications = [];
+
 var pongCount = 0; // Pong counter
 const topic = 'house/#'; // Not a wildcard topic
 const pubTopic = 'Dart/Mqtt_client/testtopic';
-
+const pubMessage = 'Hello from mqtt_client';
 
 Future<int> main() async {
   /// A websocket URL must start with ws:// or wss:// or Dart will throw an exception, consult your websocket MQTT broker
@@ -137,8 +139,9 @@ var topicStream = client.updates;
 //   yield* StreamT ;
 // }
 
-Future<int> subscript(String? _topic) async {
-  _topic ??= topic;
+Future<int> subscript([String? _topic]) async {
+  _topic ??= topic as String;
+
   /// Ok, lets try a subscription
   print('EXAMPLE::Subscribing to the $_topic topic');
   client.subscribe(_topic, MqttQos.atMostOnce);
@@ -160,14 +163,16 @@ Future<int> subscript(String? _topic) async {
     print(
         'EXAMPLE::Change notification:: topic is <${c[0].topic}>, payload is <-- $pt -->');
     print('');
-    notifications.add([c[0].topic, pt]);
+    list_notifications.add([c[0].topic, pt]);
   });
 
   return 0;
 }
 
 
-Future<int> publish() async {
+Future<int> publish([String? _topic, String? _message]) async {
+  _topic ??= pubTopic as String;
+  _message ??= 'Hello from mqtt_client' as String;
 
   /// If needed you can listen for published messages that have completed the publishing
   /// handshake which is Qos dependant. Any message received on this stream has completed its
@@ -182,15 +187,15 @@ Future<int> publish() async {
   /// Use the payload builder rather than a raw buffer
   /// Our known topic to publish to
   final builder = MqttClientPayloadBuilder();
-  builder.addString('Hello from mqtt_client');
+  builder.addString(_message);
 
   /// Subscribe to it
-  print('EXAMPLE::Subscribing to the $pubTopic topic');
-  client.subscribe(pubTopic, MqttQos.exactlyOnce);
+  print('EXAMPLE::Subscribing to the $_topic topic');
+  client.subscribe(_topic, MqttQos.exactlyOnce);
 
   /// Publish it
   print('EXAMPLE::Publishing our topic');
-  client.publishMessage(pubTopic, MqttQos.exactlyOnce, builder.payload!);
+  client.publishMessage(_topic, MqttQos.exactlyOnce, builder.payload!);
 
   /// Ok, we will now sleep a while, in this gap you will see ping request/response
   /// messages being exchanged by the keep alive mechanism.
@@ -221,7 +226,21 @@ Future<int> disconnect() async {
 }
 
 
-
+// Stream<String> _clock() async* {
+//   // This loop will run forever because _running is always true
+//   while (true) {
+//     await Future<void>.delayed(const Duration(milliseconds: 100));
+//
+//     client.updates!.listen((c) async
+//     { final recMess = c[0].payload as MqttPublishMessage;
+//     notifications = await [
+//       '${c[0].topic}',
+//       '${MqttPublishPayload.bytesToStringAsString(recMess.payload.message)}'
+//     ]; });
+//     yield " topic: ${notifications[0]} \n\n message: ${notifications[1]}";
+//   }
+// }
+//
 
 
 

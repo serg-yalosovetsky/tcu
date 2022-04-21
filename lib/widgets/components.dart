@@ -85,11 +85,47 @@ FloatingActionButton returnFloatingButton(var fun,
   FloatingActionButton FAB = FloatingActionButton(
     onPressed: fun,
     tooltip: parameters['tooltip'],
+    heroTag: parameters['heroTag'] ?? '${parameters['tooltip']}_FAB',
     child: Icon(parameters['icons']),
   );
   return FAB;
 }
-
+//
+//   final connect_button = FloatingActionButton(
+//     // onPressed: show_dialog,
+//     onPressed: _connect,
+//     tooltip: 'Connect',
+//     heroTag: 'connect_button',
+//     child: Icon(
+//       Icons.add_box,
+//     ),
+//   );
+// final unsubscribe_button = FloatingActionButton(
+//   onPressed: _unsubscribe,
+//   tooltip: 'unsubscribe',
+//   heroTag: 'unsubscribe_button',
+//   child: const Icon(Icons.unsubscribe),
+// );
+//
+// final disconnect_button = FloatingActionButton(
+//   onPressed: _disconnect,
+//   tooltip: 'disconnect',
+//   heroTag: 'disconnect_button',
+//   child: const Icon(Icons.cast_connected),
+// );
+// final publish_button = FloatingActionButton(
+//   onPressed: _publish,
+//   tooltip: 'publish',
+//   heroTag: 'publish_button',
+//   child: const Icon(Icons.publish),
+// );
+//
+// final subscribe_button = FloatingActionButton(
+//   onPressed: _subscript,
+//   tooltip: 'subscript',
+//   heroTag: 'subscribe_button',
+//   child: const Icon(Icons.connect_without_contact),
+// );
 
 CurvedNavigationBar returnCurvedNavBar(var fun, int index, {var items = _items }) {
 

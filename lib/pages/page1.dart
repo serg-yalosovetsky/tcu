@@ -73,118 +73,169 @@ class _MQTTScreenState extends State<MQTTScreen> {
     // mqttSubscribe();
   }
   final myController = TextEditingController();
+  final subscribeCtrl = TextEditingController();
+  final publishTopicCtrl = TextEditingController();
+  final publishMsgCtrl = TextEditingController();
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
-    myController.dispose();
+    subscribeCtrl.dispose();
+    publishTopicCtrl.dispose();
+    publishMsgCtrl.dispose();
     super.dispose();
   }
+
+  bool connected = false;
+  bool subscribed = false;
+  void _connect() {
+    mqtt3.main();
+    setState(() {
+      connected = true;
+    });
+    // connectionState = await client.connectionState;
+  }
+  void _subscript([String? topic]) {
+    setState(() {
+      mqtt3.subscript(topic);
+      subscribed = true;
+    });
+    // connectionState = await client.connectionState;
+  }
+  void _unsubscribe() {
+    mqtt3.unsubscribe();
+    setState(() {
+      subscribed = false;
+    });
+  }
+
+  void _publish([String? topic, String? message]){
+    setState(() {
+      mqtt3.publish(topic, message);
+    });
+  }
+
+  void _disconnect() {
+    mqtt3.disconnect() ;
+    setState(() {
+      connected = false;
+      subscribed = false;
+    });
+  }
+
+  List<Widget> persistentFooterButtons = [];
+
   @override
   Widget build(BuildContext context) {
-  bool work = false;
 
-    void _connect() {
-      mqtt3.main();
-      // connectionState = await client.connectionState;
-    }
-    var notifications = '0';
+   final connect_button = returnFloatingButton(_connect, parameters:{
+                  'tooltip': 'connect', 'icons': Icons.cast_connected} );
 
-    void _subscript() {
-      setState(() {
-        // mqtt3.topicStream!.listen(
-        //         (data) {
-        //       // final recMess = data![0].payload as MqttPublishMessage;
-        //       //  var message =
-        //       // MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-        //         notifications = '${data[0].topic} ';
-        //     }
-        // );
-        mqtt3.subscript(myController.text);
-      });
-          // connectionState = await client.connectionState;
-    }
+   showSubscribeDialog (BuildContext context) {
+     var _actions = [
+       ElevatedButton(
+           onPressed: ()
+             {
+                _subscript(subscribeCtrl.text);
+                Navigator.of(context).pop();
+            },
+           child: const Text('Subscribe')
+       )
+     ];
 
-    void _publish() {setState(() {
-       mqtt3.publish();});}
-    void _unsubscribe() {setState(() {
-       mqtt3.unsubscribe() ;}
-    );}
-    void _disconnect() {setState(() {
-      mqtt3.disconnect() ;
-      work = true;
-    }
-    );}
+     AlertDialog subscribeDialog = AlertDialog(
+       title: Text('Enter a subscribe topic'),
+       content: TextField(
+         controller: subscribeCtrl,
+         decoration: InputDecoration(
+           border: OutlineInputBorder(),
+           hintText: 'house/#',
+         ),
+       ),
+       actions: _actions,
+     );
 
+     showDialog(
+       context: context,
+       builder: (BuildContext context) {
+         return subscribeDialog;
+       },
+     );
+   }
 
-    // var widgets = <Widget>[
-    //   Text(
-    //     notifications.toString(),
-    //   ),
-    // ];
+   showPublishDialog (BuildContext context) {
+     var _actions = [
+       ElevatedButton(
+           onPressed: ()
+           {
+             _publish(publishTopicCtrl.text,publishMsgCtrl.text);
+             Navigator.of(context).pop();
+           },
+           child: const Text('Publish')
+       )
+     ];
+     var topicTextField = TextField(
+       controller: publishTopicCtrl,
+       decoration: InputDecoration(
+         border: OutlineInputBorder(),
+         hintText: 'house/#',
+       ),
+     );
+     var messageTextField = TextField(
+       controller: publishMsgCtrl,
+       decoration: InputDecoration(
+         border: OutlineInputBorder(),
+         hintText: 'hello house!)',
+       ),
+     );
+     
+     AlertDialog publishDialog = AlertDialog(
+       title: Text('Enter a publish message'),
+       content: Column(
+         crossAxisAlignment: CrossAxisAlignment.center,
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: [
+           topicTextField,
+           messageTextField,
+         ],
+       ),
+       actions: _actions,
+     );
 
-    var add_button = FloatingActionButton(
-      // onPressed: show_dialog,
-      onPressed: _connect,
-      tooltip: 'Connect',
-      heroTag: 'add_button',
-      child: Icon(
-        Icons.add_box,
-      ),
-    );
-    var connect_button = FloatingActionButton(
-      onPressed: _subscript,
-      tooltip: 'subscript',
-      heroTag: 'connect_button',
-      child: const Icon(Icons.connect_without_contact),
-    );
+     showDialog(
+       context: context,
+       builder: (BuildContext context) {
+         return publishDialog;
+       },
+     );
+   }
 
-    var subscribe_button = FloatingActionButton(
-      onPressed: _unsubscribe,
-      tooltip: 'unsubscribe',
-      heroTag: 'subscribe_button',
-      child: const Icon(Icons.unsubscribe),
-    );
-    var disconnect_button = FloatingActionButton(
-      onPressed: _disconnect,
-      tooltip: 'disconnect',
-      heroTag: 'disconnect_button',
-      child: const Icon(Icons.cast_connected),
-    );
-    var publish_button = FloatingActionButton(
-      onPressed: _publish,
-      tooltip: 'publish',
-      heroTag: 'publish_button',
-      child: const Icon(Icons.publish),
-    );
-    AlertDialog build_add_widget (BuildContext context) {
-      void text_change (String value) {
-        user_todo = value;
-      }
+   final subscribe_button = returnFloatingButton(() {
+       showSubscribeDialog(context);
+      }, parameters:{
+        'tooltip': 'subscribe', 'icons': Icons.subscriptions} );
+   final unsubscribe_button = returnFloatingButton(_unsubscribe, parameters:{
+     'tooltip': 'unsubscribe', 'icons': Icons.unsubscribe} );
+   final disconnect_button = returnFloatingButton(_disconnect, parameters:{
+     'tooltip': 'disconnect', 'icons': Icons.cancel} );
+   final publish_button = returnFloatingButton(() {
+         showPublishDialog(context);
+         print('click');
+     }, parameters:{
+        'tooltip': 'publish', 'icons': Icons.publish} );
 
-      var commit_text = Text('add');
+  List<Widget> get_fabs_list() {
+    if (connected && subscribed)
+      return([ publish_button, unsubscribe_button, disconnect_button]);
+    else if (connected && !(subscribed))
+      return ([subscribe_button, publish_button, disconnect_button]);
+    else
+      return([connect_button]);
+  }
 
-      var _actions = [
-        ElevatedButton(
-            onPressed: _connect,
-            child: commit_text)
-      ];
-
-      var alertDialog = AlertDialog(
-        title: Text('add element'),
-        content: TextField(
-          onChanged: text_change,
-        ),
-        actions: _actions,
-      );
-
-      return alertDialog;
-    }
-
-
-    var remove_icon = Icon(
-          Icons.delete_sweep,
-          color: Colors.deepOrangeAccent
-      );
+    // var remove_icon = Icon(
+    //       Icons.delete_sweep,
+    //       color: Colors.deepOrangeAccent
+    //   );
 
 
 
@@ -345,9 +396,8 @@ class _MQTTScreenState extends State<MQTTScreen> {
       ),
     // );
       // body: Text(notifications.toString()),
-      // floatingActionButton: [add_button, refresh_button],
-      persistentFooterButtons: [add_button, connect_button, publish_button,
-         subscribe_button, disconnect_button],
+      // floatingActionButton: [connect_button, refresh_button],
+      persistentFooterButtons: get_fabs_list(),
 
       // This trailing comma makes auto-formatting nicer for build methods.
     );
