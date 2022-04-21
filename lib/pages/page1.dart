@@ -2,91 +2,49 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:tcu/widgets/components.dart';
-// import 'dart:html';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-
-import 'package:tcu/mqtt2.dart' as mqtt;
 import 'package:tcu/mqtt3.dart' as mqtt3;
-import 'package:tcu/mqtt3.dart' show topicStream, publishStream;
 
-import '../mqtt2.dart';
-// import 'package:tcu/mqtt.dart' show get_notifications;
-
-// void main() {
-//   runApp(const Page1());
-// }
 
 const String title1 = "mqtt";
-var client ;
 
 class MQTTScreen extends StatefulWidget {
   const MQTTScreen({Key? key }) : super(key: key);
-
 
   @override
   _MQTTScreenState createState() => _MQTTScreenState();
 }
 
+
 class _MQTTScreenState extends State<MQTTScreen> {
   final bool _running = true;
   List notifications = [];
-  var item;
+  List<Widget> persistentFooterButtons = [];
+  bool connected = false;
+  bool subscribed = false;
+  late var connectionState;
+  final subscribeCtrl = TextEditingController();
+  final publishTopicCtrl = TextEditingController();
+  final publishMsgCtrl = TextEditingController();
+
   Stream<String> _clock() async* {
-    // This loop will run forever because _running is always true
     while (_running) {
       await Future<void>.delayed(const Duration(milliseconds: 100));
-
-      // await  mqtt3.client.updates!.single.whenComplete(() => null) ;
-      // DateTime _now = DateTime.now();
-      // This will be displayed on the screen as current time
-      // mqtt3.client.updates!.listen((c) {notifications.add('${c[0].topic}'); });
       mqtt3.client.updates!.listen((c) async
             { final recMess = c[0].payload as MqttPublishMessage;
               notifications = await [
                   '${c[0].topic}',
                   '${MqttPublishPayload.bytesToStringAsString(recMess.payload.message)}'
-                                ]; });
+                                ];
+            }
+        );
       yield " topic: ${notifications[0]} \n\n message: ${notifications[1]}";
     }
   }
-  String? user_todo;
-  List todo_list = [];
-  String broker           = 'abc.cloudmqtt.com';
-  int port                = 13372;
-  String username         = 'seu_username';
-  String passwd           = 'seu_password';
-  String clientIdentifier = 'android';
-  double _temp = 20;
-  late var connectionState;
-  // MqttClient client;
-  // MqttConnectionState connectionState;
-  // StreamSubscription subscription;
 
-  @override
-  void initState() {
-    super.initState();
-    // box = Hive.box('messages');
-    //box.clear();
-    // mqttSubscribe();
-  }
-  final myController = TextEditingController();
-  final subscribeCtrl = TextEditingController();
-  final publishTopicCtrl = TextEditingController();
-  final publishMsgCtrl = TextEditingController();
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    subscribeCtrl.dispose();
-    publishTopicCtrl.dispose();
-    publishMsgCtrl.dispose();
-    super.dispose();
-  }
 
-  bool connected = false;
-  bool subscribed = false;
   void _connect() {
     mqtt3.main();
     setState(() {
@@ -122,13 +80,17 @@ class _MQTTScreenState extends State<MQTTScreen> {
     });
   }
 
-  List<Widget> persistentFooterButtons = [];
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    subscribeCtrl.dispose();
+    publishTopicCtrl.dispose();
+    publishMsgCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-
-   final connect_button = returnFloatingButton(_connect, parameters:{
-                  'tooltip': 'connect', 'icons': Icons.cast_connected} );
 
    showSubscribeDialog (BuildContext context) {
      var _actions = [
@@ -161,7 +123,6 @@ class _MQTTScreenState extends State<MQTTScreen> {
        },
      );
    }
-
    showPublishDialog (BuildContext context) {
      var _actions = [
        ElevatedButton(
@@ -209,6 +170,8 @@ class _MQTTScreenState extends State<MQTTScreen> {
      );
    }
 
+   final connect_button = returnFloatingButton(_connect, parameters:{
+     'tooltip': 'connect', 'icons': Icons.cast_connected} );
    final subscribe_button = returnFloatingButton(() {
        showSubscribeDialog(context);
       }, parameters:{
@@ -231,47 +194,6 @@ class _MQTTScreenState extends State<MQTTScreen> {
     else
       return([connect_button]);
   }
-
-    // var remove_icon = Icon(
-    //       Icons.delete_sweep,
-    //       color: Colors.deepOrangeAccent
-    //   );
-
-
-
-
-
-    final imgStream = StreamController<Image>();
-
-    var listView = StreamBuilder(
-        stream: imgStream.stream,
-        builder:
-            (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                if (!snapshot.hasData) {
-                  print('no data');
-                }
-
-                 if (snapshot.connectionState == ConnectionState.done) {}
-          var container = Container(
-            height: 220,
-            width: 220,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-            //  color: snapshot.data,
-            child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              child: snapshot.data,
-            ),
-          );
-          return container;
-        });
-
-    //    ListView.builder(
-    //       // itemCount: todo_list.length,
-    //         itemCount: notifications.length,
-    //         itemBuilder: item_builder
-    //     );
 
     void menu_buttons(_route)  {
       Navigator.pop(context);
@@ -309,10 +231,7 @@ class _MQTTScreenState extends State<MQTTScreen> {
       );
 
     }
-    Stream<List> createAsyncGenerator(int n) async* {
-      int k = 0;
-      while (k < n) yield [k++];
-    }
+
     var _streamwidget = StreamBuilder(
       stream: _clock(), //mqtt3.createAsyncGenerator(work),
       initialData: ['',''],
@@ -358,17 +277,7 @@ class _MQTTScreenState extends State<MQTTScreen> {
       appBar: AppBar(
         // Here we take the value from the MQTTScreen object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text('widget.title'),
-        // centerTitle: true,
-        // actions: [
-        //   IconButton(
-        //       onPressed: _menuOpen,
-        //       icon: Icon(
-        //         Icons.menu
-        //       )
-        //   )
-        // ],
-
+        title: Text('mqtt'),
       ),
       body: SizedBox(
         width: double.infinity,
@@ -380,30 +289,15 @@ class _MQTTScreenState extends State<MQTTScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _streamwidget,
-              TextField(
-                  controller: myController,
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Enter a topic',
-                  ),
-              ),
+
             ],
           )
-          // Text('$notifications')
-          // Text('${mqtt3.notifications.last}')
-
         ),
       ),
-    // );
-      // body: Text(notifications.toString()),
-      // floatingActionButton: [connect_button, refresh_button],
       persistentFooterButtons: get_fabs_list(),
-
-      // This trailing comma makes auto-formatting nicer for build methods.
     );
 
     return scaffold;
   }
-
 
 }
