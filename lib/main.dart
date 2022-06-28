@@ -4,6 +4,7 @@ import 'package:tcu/pages/page1.dart';
 import 'package:tcu/pages/page2.dart';
 
 void main() {
+  // WidgetsFlutterBinding.ensureInitialized();
   runApp(const TCUapp());
 }
 
