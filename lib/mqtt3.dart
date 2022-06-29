@@ -102,30 +102,31 @@ Future<int> to_connect([
 }
 
 
-Stream<List<String>> createAsyncGenerator(var work) async* {
-  String message = '';
-  String topic = '';
-  while (work) {
-    try{
-          client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
-          final recMess = c![0].payload as MqttPublishMessage;
-          final pt =
-          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
 
-          print(
-              'asyncgen::Change notification:: topic is <${c[0].topic}>, payload is <-- $pt -->');
-          print('');
-          // if (client.connectionStatus!.state == MqttConnectionState.connected) {
-            topic = c[0].topic;
-            message = pt;
-          });
-    }
-    catch (e) {
-      print('error');
-    }
-    yield [topic, message];
-  }
-}
+// Stream<List<String>> createAsyncGenerator(var work) async* {
+//   String message = '';
+//   String topic = '';
+//   while (work) {
+//     try{
+//           client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+//           final recMess = c![0].payload as MqttPublishMessage;
+//           final pt =
+//           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+//
+//           print(
+//               'asyncgen::Change notification:: topic is <${c[0].topic}>, payload is <-- $pt -->');
+//           print('');
+//           // if (client.connectionStatus!.state == MqttConnectionState.connected) {
+//             topic = c[0].topic;
+//             message = pt;
+//           });
+//     }
+//     catch (e) {
+//       print('error');
+//     }
+//     yield [topic, message];
+//   }
+// }
 //
 var topicStream = client.updates;
 // // final mystream = NumberCreator().stream()

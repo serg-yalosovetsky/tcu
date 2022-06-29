@@ -70,16 +70,16 @@ Future<void> mqtt_main() async {
 
   /// The client has a change notifier object(see the Observable class) which we then listen to to get
   /// notifications of published updates to each subscribed topic.
-  client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
-    final recMess = c![0].payload as MqttPublishMessage;
-    final pt =
-    MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-    MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-    String message = 'Change notification:: topic is ${c[0].topic}, payload is $pt';
-    print(message);
-    print('');
-    notifications.add(message);
-  });
+  // client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+  //   final recMess = c![0].payload as MqttPublishMessage;
+  //   final pt =
+  //   MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+  //   MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+  //   String message = 'Change notification:: topic is ${c[0].topic}, payload is $pt';
+  //   print(message);
+  //   print('');
+  //   notifications.add(message);
+  // });
 
   // client.published!.listen((MqttPublishMessage message) {
   //   print(

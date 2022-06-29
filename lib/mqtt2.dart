@@ -100,13 +100,13 @@ Future<MqttServerClient> connect3() async {
     client.disconnect();
   }
 
-  client.updates!.listen((List<MqttReceivedMessage<MqttMessage>> c) {
-    // final MqttPublishMessage message = c![0].payload;
-    // final payload =
-    // MqttPublishPayload.bytesToStringAsString(message.payload.message);
-
-    print('Received message:payload from topic: ${c[0].topic}>');
-  });
+  // client.updates!.listen((List<MqttReceivedMessage<MqttMessage>> c) {
+  //   // final MqttPublishMessage message = c![0].payload;
+  //   // final payload =
+  //   // MqttPublishPayload.bytesToStringAsString(message.payload.message);
+  //
+  //   print('Received message:payload from topic: ${c[0].topic}>');
+  // });
 
   return client;
 }
@@ -164,16 +164,16 @@ connect2() async {
 
   /// The client has a change notifier object(see the Observable class) which we then listen to to get
   /// notifications of published updates to each subscribed topic.
-  client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
-    final recMess = c![0].payload as MqttPublishMessage;
-    final pt =
-    MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-    MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-    String message = 'Change notification:: topic is ${c[0].topic}, payload is $pt';
-    print(message);
-    print('');
-    // notifications.add(message);
-  });
+  // client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+  //   final recMess = c![0].payload as MqttPublishMessage;
+  //   final pt =
+  //   MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+  //   MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+  //   String message = 'Change notification:: topic is ${c[0].topic}, payload is $pt';
+  //   print(message);
+  //   print('');
+  //   // notifications.add(message);
+  // });
 
   print('Sleeping.....');
   await MqttUtilities.asyncSleep(120);
@@ -229,17 +229,17 @@ connect() async {
     client.disconnect();
   }
 
-  client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
-    print('second4');
-    final recMessage = c![0].payload as MqttPublishMessage;
-    // final MqttPublishMessage publishMessage =  c[0].payload;
-    final payload =
-    MqttPublishPayload.bytesToStringAsString(recMessage.payload.message);
-    // final ppayload =    MqttPublishPayload.bytesToStringAsString(publishMessage.payload.message);
-
-
-    print('Received message:$payload from topic: ${c[0].topic}>');
-  });
+  // client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+  //   print('second4');
+  //   final recMessage = c![0].payload as MqttPublishMessage;
+  //   // final MqttPublishMessage publishMessage =  c[0].payload;
+  //   final payload =
+  //   MqttPublishPayload.bytesToStringAsString(recMessage.payload.message);
+  //   // final ppayload =    MqttPublishPayload.bytesToStringAsString(publishMessage.payload.message);
+  //
+  //
+  //   print('Received message:$payload from topic: ${c[0].topic}>');
+  // });
 
   // return client;
 }
@@ -264,23 +264,23 @@ mqttSubscribe() async {
   client.onSubscribed = (String topic) {
     log('MQTT subscribed to $topic');
   };
-
-  if (client.connectionStatus!.state == MqttConnectionState.connected) {
-    client.subscribe("chat/#", MqttQos.atMostOnce);
-
-    client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
-      final recMess = c![0].payload as MqttPublishMessage;
-      final pt = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-      log("message payload => " + pt);
-
-      // var box = Hive.box('messages');
-      var doc = json.decode(utf8.decode(pt.codeUnits));
-      // add to hivedb
-      var message =
-          '{"message" : "${doc["message"]}", "from" : "${doc["from"]}" ,"timeStamp" : "${doc["timeStamp"]}" }';
-      // box.put(doc["timeStamp"], message);
-    });
-  }
+  //
+  // if (client.connectionStatus!.state == MqttConnectionState.connected) {
+  //   client.subscribe("chat/#", MqttQos.atMostOnce);
+  //
+  //   client.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+  //     final recMess = c![0].payload as MqttPublishMessage;
+  //     final pt = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+  //     log("message payload => " + pt);
+  //
+  //     // var box = Hive.box('messages');
+  //     var doc = json.decode(utf8.decode(pt.codeUnits));
+  //     // add to hivedb
+  //     var message =
+  //         '{"message" : "${doc["message"]}", "from" : "${doc["from"]}" ,"timeStamp" : "${doc["timeStamp"]}" }';
+  //     // box.put(doc["timeStamp"], message);
+  //   });
+  // }
 }
 
 mqttPublish({required String message}) async {

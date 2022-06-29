@@ -12,6 +12,21 @@ import 'package:uuid/uuid.dart';
 import 'dart:developer';
 
 var uuid = Uuid();
+final subscribeCtrl = TextEditingController();
+final subscrTopicCtrl = TextEditingController();
+final subscrMsgCtrl = TextEditingController();
+final subscrMsgOffCtrl = TextEditingController();
+final publishTopicCtrl = TextEditingController();
+final publishMsgCtrl = TextEditingController();
+final publishMsgOffCtrl = TextEditingController();
+final connectServerCtrl = TextEditingController();
+final connectPortCtrl = TextEditingController();
+final connectClientCtrl = TextEditingController();
+final connectTopicCtrl = TextEditingController();
+final connectMessageCtrl = TextEditingController();
+
+bool connected = false;
+bool subscribed = false;
 
 const String title1 = "mqtt";
 Map<String,bool> buttons_state = {};
@@ -28,21 +43,9 @@ class _MQTTScreenState extends State<MQTTScreen> {
   final bool _running = true;
   List notifications = [];
   List<Widget> persistentFooterButtons = [];
-  bool connected = false;
-  bool subscribed = false;
+
   late var connectionState;
-  final subscribeCtrl = TextEditingController();
-  final subscrTopicCtrl = TextEditingController();
-  final subscrMsgCtrl = TextEditingController();
-  final subscrMsgOffCtrl = TextEditingController();
-  final publishTopicCtrl = TextEditingController();
-  final publishMsgCtrl = TextEditingController();
-  final publishMsgOffCtrl = TextEditingController();
-  final connectServerCtrl = TextEditingController();
-  final connectPortCtrl = TextEditingController();
-  final connectClientCtrl = TextEditingController();
-  final connectTopicCtrl = TextEditingController();
-  final connectMessageCtrl = TextEditingController();
+
 
 
 
@@ -52,7 +55,7 @@ class _MQTTScreenState extends State<MQTTScreen> {
   List<Function> listenersFunction = [];
 
 
-  Stream<String> _clock() async* {
+  Stream<String> stream_clock() async* {
     while (_running) {
       await Future<void>.delayed(const Duration(milliseconds: 100));
       mqtt3.client.updates!.listen((c) async
@@ -520,71 +523,72 @@ class _MQTTScreenState extends State<MQTTScreen> {
     var last_index_topic = 0;
 
     var _streamwidget = StreamBuilder(
-      stream: _clock(), //mqtt3.createAsyncGenerator(work),
+      stream: stream_clock(), //mqtt3.createAsyncGenerator(work),
       initialData: ['',''],
       builder: (
           BuildContext context,
           AsyncSnapshot snapshot,
           ) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return ListView(
-            shrinkWrap: true,
+            return ListView(
+              shrinkWrap: true,
 
-            padding: const EdgeInsets.all(8),
-            children: [
-              CircularProgressIndicator(),
-              Visibility(
-                visible: snapshot.hasData,
-                child: Text(
-                  'no data',
-                  style: const TextStyle(color: Colors.black, fontSize: 24),
+              padding: const EdgeInsets.all(8),
+              children: [
+                CircularProgressIndicator(),
+                Visibility(
+                  visible: snapshot.hasData,
+                  child: Text(
+                    'no data',
+                    style: const TextStyle(color: Colors.black, fontSize: 24),
+                  ),
                 ),
-              ),
-            ],
-          );
-        } else
-        if (snapshot.connectionState == ConnectionState.active
-            || snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasError)
-            return const Text('');
-          else if (snapshot.hasData && snapshot.data != null) {
-            var _text = '${snapshot.data ?? ''}';
-            var texts = '';
-            for (var topic in subscribed_buttons) {
+              ],
+            );
+        }
+        else
+          if (snapshot.connectionState == ConnectionState.active
+              || snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError)
+              return const Text('');
+            else if (snapshot.hasData && snapshot.data != null) {
+              var _text = '${snapshot.data ?? ''}';
+              var texts = '';
+              for (var topic in subscribed_buttons) {
 
-              if (_text.contains('topic: $topic', last_index_topic)) {
-                log('contain Change notification:: topic is $topic');
+                if (_text.contains('topic: $topic', last_index_topic)) {
+                  log('contain Change notification:: topic is $topic');
 
-                 last_index_topic = _text.lastIndexOf(topic);
-                if (last_index_topic > 0)
-                {
-                  var contain = _text.contains('message: ${button_parameters_map[topic][0]}', last_index_topic);
-                  if (contain) {
-                    log('contain 0');
-                    texts = 'contain ${button_parameters_map[topic][0]}';
-                    _text_expanded = 'contain ${button_parameters_map[topic][0]}';
-                  }
+                   last_index_topic = _text.lastIndexOf(topic);
+                  if (last_index_topic > 0)
+                  {
+                    var contain = _text.contains('message: ${button_parameters_map[topic][0]}', last_index_topic);
+                    if (contain) {
+                      log('contain 0');
+                      texts = 'contain ${button_parameters_map[topic][0]}';
+                      _text_expanded = 'contain ${button_parameters_map[topic][0]}';
+                    }
 
-                  var contain1 = _text.contains('message: ${button_parameters_map[topic][1]}', last_index_topic);
-                  if (contain1) {
-                    log('contain 1');
-                    texts = 'contain ${button_parameters_map[topic][1]}';
-                    _text_expanded = 'contain ${button_parameters_map[topic][1]}';
+                    var contain1 = _text.contains('message: ${button_parameters_map[topic][1]}', last_index_topic);
+                    if (contain1) {
+                      log('contain 1');
+                      texts = 'contain ${button_parameters_map[topic][1]}';
+                      _text_expanded = 'contain ${button_parameters_map[topic][1]}';
+                    }
                   }
                 }
+                // texts += topic;
+                // log('topic added: $topic');
               }
-              // texts += topic;
-              // log('topic added: $topic');
-            }
 
-            // [publishTopicCtrl.text] = true;
+              // [publishTopicCtrl.text] = true;
 
-            // return expanded_widget_function(_text_expanded);
-            return expanded_widget_function(_text);
+              // return expanded_widget_function(_text_expanded);
+              return expanded_widget_function(_text);
 
-            // Text(texts,
-              //   style: const TextStyle(color: Colors.teal, fontSize: 20));
-          } else {
+              // Text(texts,
+                //   style: const TextStyle(color: Colors.teal, fontSize: 20));
+            } else {
             return const Text('Empty data');
           }
         }
@@ -593,6 +597,8 @@ class _MQTTScreenState extends State<MQTTScreen> {
 
       },
     );
+
+
     List<Widget> get_buttons(){
       buttons_dynamic.add(_streamwidget);
       // List<Widget> _butt = [_streamwidget,];
